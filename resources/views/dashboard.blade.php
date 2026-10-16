@@ -18,7 +18,7 @@
                     B
                 </div>
                 <div>
-                    <h1 class="text-lg font-bold">Sucursales</h1>
+                    <h1 class="text-lg font-bold">Sucursales (Has sido hackeado)</h1>
                     <p class="text-xs text-slate-400">Administración bancaria</p>
                 </div>
             </div>
