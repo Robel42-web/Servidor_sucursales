@@ -6,70 +6,87 @@ use App\Http\Controllers\Web\EmployeeController;
 use App\Http\Controllers\Web\ShiftController;
 use App\Http\Controllers\Web\CustomerServiceController;
 use App\Http\Controllers\Web\ServiceRequestController;
+use App\Http\Controllers\Web\BranchLoginController;
 
+// Rutas públicas de autenticación
+Route::get('/login', [BranchLoginController::class, 'showLogin'])
+    ->name('login');
 
-Route::get('/', [DashboardController::class, 'index'])
-    ->name('dashboard');
+Route::post('/login', [BranchLoginController::class, 'login'])
+    ->middleware('throttle:5,1')
+    ->name('login.submit');
 
-Route::get('/empleados', [EmployeeController::class, 'index'])
-    ->name('employees.index');
+// Cerrar sesión requiere una sesión autenticada
+Route::post('/logout', [BranchLoginController::class, 'logout'])
+    ->middleware('branch.auth')
+    ->name('logout');
 
-Route::get('/empleados/crear', [EmployeeController::class, 'create'])
-    ->name('employees.create');
+// Panel protegido de la sucursal
+Route::middleware('branch.auth')->group(function () {
 
-Route::post('/empleados', [EmployeeController::class, 'store'])
-    ->name('employees.store');
+    Route::get('/', [DashboardController::class, 'index'])
+        ->name('dashboard');
 
-Route::get('/empleados/{employee}/editar', [EmployeeController::class, 'edit'])
-    ->name('employees.edit');
+    Route::get('/empleados', [EmployeeController::class, 'index'])
+        ->name('employees.index');
 
-Route::put('/empleados/{employee}', [EmployeeController::class, 'update'])
-    ->name('employees.update');
+    Route::get('/empleados/crear', [EmployeeController::class, 'create'])
+        ->name('employees.create');
 
-Route::patch('/empleados/{employee}/baja', [EmployeeController::class, 'deactivate'])
-    ->name('employees.deactivate');
+    Route::post('/empleados', [EmployeeController::class, 'store'])
+        ->name('employees.store');
 
-Route::get('/turnos', [ShiftController::class, 'index'])
-    ->name('shifts.index');
+    Route::get('/empleados/{employee}/editar', [EmployeeController::class, 'edit'])
+        ->name('employees.edit');
 
-Route::get('/turnos/crear', [ShiftController::class, 'create'])
-    ->name('shifts.create');
+    Route::put('/empleados/{employee}', [EmployeeController::class, 'update'])
+        ->name('employees.update');
 
-Route::post('/turnos', [ShiftController::class, 'store'])
-    ->name('shifts.store');
+    Route::patch('/empleados/{employee}/baja', [EmployeeController::class, 'deactivate'])
+        ->name('employees.deactivate');
 
-Route::get('/turnos/{shift}/editar', [ShiftController::class, 'edit'])
-    ->name('shifts.edit');
+    Route::get('/turnos', [ShiftController::class, 'index'])
+        ->name('shifts.index');
 
-Route::put('/turnos/{shift}', [ShiftController::class, 'update'])
-    ->name('shifts.update');
+    Route::get('/turnos/crear', [ShiftController::class, 'create'])
+        ->name('shifts.create');
 
-Route::get('/atenciones', [CustomerServiceController::class, 'index'])
-    ->name('services.index');
+    Route::post('/turnos', [ShiftController::class, 'store'])
+        ->name('shifts.store');
 
-Route::get('/atenciones/crear', [CustomerServiceController::class, 'create'])
-    ->name('services.create');
+    Route::get('/turnos/{shift}/editar', [ShiftController::class, 'edit'])
+        ->name('shifts.edit');
 
-Route::post('/atenciones', [CustomerServiceController::class, 'store'])
-    ->name('services.store');
+    Route::put('/turnos/{shift}', [ShiftController::class, 'update'])
+        ->name('shifts.update');
 
-Route::get('/atenciones/{record}/editar', [CustomerServiceController::class, 'edit'])
-    ->name('services.edit');
+    Route::get('/atenciones', [CustomerServiceController::class, 'index'])
+        ->name('services.index');
 
-Route::put('/atenciones/{record}', [CustomerServiceController::class, 'update'])
-    ->name('services.update');
+    Route::get('/atenciones/crear', [CustomerServiceController::class, 'create'])
+        ->name('services.create');
 
-Route::get('/solicitudes', [ServiceRequestController::class, 'index'])
-    ->name('requests.index');
+    Route::post('/atenciones', [CustomerServiceController::class, 'store'])
+        ->name('services.store');
 
-Route::get('/solicitudes/crear', [ServiceRequestController::class, 'create'])
-    ->name('requests.create');
+    Route::get('/atenciones/{record}/editar', [CustomerServiceController::class, 'edit'])
+        ->name('services.edit');
 
-Route::post('/solicitudes', [ServiceRequestController::class, 'store'])
-    ->name('requests.store');
+    Route::put('/atenciones/{record}', [CustomerServiceController::class, 'update'])
+        ->name('services.update');
 
-Route::get('/solicitudes/{id}/editar', [ServiceRequestController::class, 'edit'])
-    ->name('requests.edit');
+    Route::get('/solicitudes', [ServiceRequestController::class, 'index'])
+        ->name('requests.index');
 
-Route::put('/solicitudes/{id}', [ServiceRequestController::class, 'update'])
-    ->name('requests.update');
+    Route::get('/solicitudes/crear', [ServiceRequestController::class, 'create'])
+        ->name('requests.create');
+
+    Route::post('/solicitudes', [ServiceRequestController::class, 'store'])
+        ->name('requests.store');
+
+    Route::get('/solicitudes/{id}/editar', [ServiceRequestController::class, 'edit'])
+        ->name('requests.edit');
+
+    Route::put('/solicitudes/{id}', [ServiceRequestController::class, 'update'])
+        ->name('requests.update');
+});

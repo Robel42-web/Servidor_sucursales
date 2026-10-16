@@ -82,4 +82,32 @@ class BancoCentralService
             'descripcion' => $descripcion,
         ]);
     }
+    public function validarAccesoSucursal(
+        string $codigoSucursal,
+        string $apiKey
+    ) {
+        return Http::baseUrl(
+            rtrim(config('services.banco_central.url'), '/')
+        )
+            ->acceptJson()
+            ->timeout(15)
+            ->post('/api/sucursales/validar-acceso', [
+                'branch_code' => $codigoSucursal,
+                'api_key' => $apiKey,
+            ]);
+    }
+
+    public function autenticarSucursal(string $email, string $password)
+{
+    return Http::baseUrl(
+        rtrim(config('services.banco_central.url'), '/')
+    )
+        ->acceptJson()
+        ->asJson()
+        ->timeout(15)
+        ->post('/api/sucursales/login', [
+            'email' => $email,
+            'password' => $password,
+        ]);
+}
 }

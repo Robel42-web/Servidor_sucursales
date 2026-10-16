@@ -13,10 +13,20 @@ return [
     | a conventional file to locate the various service credentials.
     |
     */
-    'branch' => [
-    'api_key' => env('BRANCH_API_KEY'),
+    'supabase' => [
+        'url' => env('SUPABASE_URL'),
+        'publishable_key' => env('SUPABASE_PUBLISHABLE_KEY'),
     ],
-    
+
+
+    'branch' => [
+        'api_key' => env('BRANCH_API_KEY'),
+        // Acceso exclusivo para desarrollo local
+        'local_login_enabled' => env('BRANCH_LOCAL_LOGIN_ENABLED', false),
+        'local_login_email' => env('BRANCH_LOCAL_LOGIN_EMAIL', ''),
+        'local_login_password' => env('BRANCH_LOCAL_LOGIN_PASSWORD', ''),
+    ],
+
 
     'postmark' => [
         'key' => env('POSTMARK_API_KEY'),
@@ -39,10 +49,10 @@ return [
         ],
     ],
 
-'banco_central' => [
-    'url' => env('BANCO_CENTRAL_URL', 'http://127.0.0.1:8002'),
-    'token' => env('BANCO_CENTRAL_TOKEN'),
-],
+    'banco_central' => [
+        'url' => env('BANCO_CENTRAL_URL', 'http://127.0.0.1:8002'),
+        'token' => env('BANCO_CENTRAL_TOKEN'),
+    ],
 
 
 ];

@@ -13,8 +13,12 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Confiar en los encabezados del proxy HTTPS de Render
+        $middleware->trustProxies(at: '*');
+
         $middleware->alias([
             'api.key' => \App\Http\Middleware\VerifyBranchApiKey::class,
+            'branch.auth' => \App\Http\Middleware\EnsureBranchAuthenticated::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

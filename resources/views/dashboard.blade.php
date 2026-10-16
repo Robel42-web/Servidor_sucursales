@@ -55,12 +55,59 @@
             </nav>
 
 
-            <div class="mt-10 rounded-xl border border-slate-800 p-4">
-                <p class="text-sm font-semibold">Sistema de sucursal</p>
-                <p class="mt-1 text-xs text-slate-400">
-                    Datos conectados a Supabase mediante Laravel.
+            <div class="mt-10 rounded-xl border border-slate-800 bg-slate-900 p-4">
+                <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                    Sucursal activa
                 </p>
+
+                <p class="mt-2 text-base font-bold text-white">
+                    {{ session('branch.nombre', 'Sucursal no identificada') }}
+                </p>
+
+                <p class="mt-1 text-sm text-blue-400">
+                    Código: {{ session('branch.codigo', 'Sin código') }}
+                </p>
+
+                <div class="mt-4 border-t border-slate-700 pt-3">
+                    <p class="text-xs text-slate-400">Usuario conectado</p>
+                    <p class="mt-1 text-sm font-medium text-white">
+                        {{ session('branch_user.nombre', 'Usuario') }}
+                    </p>
+                    <p class="mt-1 break-all text-xs text-slate-400">
+                        {{ session('branch_user.correo', '') }}
+                    </p>
+                </div>
+
+                @if (session('branch.id') === 'local-dev')
+                    <div class="mt-4 rounded-lg bg-amber-500/10 px-3 py-2">
+                        <p class="text-xs font-semibold text-amber-400">
+                            Modo de desarrollo local
+                        </p>
+                    </div>
+                @endif
+
+                <form method="POST" action="{{ route('logout') }}" class="mt-4">
+                    @csrf
+
+                    <button type="submit" class="flex w-full items-center justify-center gap-2 rounded-xl
+               border border-rose-500/30 bg-rose-500/10 px-4 py-3
+               font-semibold text-rose-300 transition
+               hover:bg-rose-600 hover:text-white
+               focus:outline-none focus:ring-2 focus:ring-rose-400">
+
+                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"
+                            aria-hidden="true">
+
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6A2.25 2.25 0 0 0 5.25 5.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15M18 15l3-3m0 0-3-3m3 3H9" />
+                        </svg>
+
+                        Cerrar sesión
+                    </button>
+                </form>
+
             </div>
+
         </aside>
 
         <!-- Contenido principal -->
