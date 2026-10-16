@@ -18,6 +18,7 @@ class Employee extends Model
     public $incrementing = false;
 
     protected $fillable = [
+        'branch_code',
         'employee_number',
         'full_name',
         'email',

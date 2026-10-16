@@ -2,29 +2,65 @@
 
 namespace App\Services;
 
+use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Http\Client\PendingRequest;
+use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
+use RuntimeException;
 
 class BancoCentralService
 {
+    /**
+     * Las operaciones bancarias usan la API Key de la sucursal autenticada,
+     * no el token general configurado para el Banco Central.
+     */
     private function cliente(): PendingRequest
     {
-        return Http::baseUrl(
-            rtrim(config('services.banco_central.url'), '/')
-        )
-            ->withToken(config('services.banco_central.token'))
+        $codigoSucursal = session('branch.codigo');
+
+        if (!is_string($codigoSucursal) || trim($codigoSucursal) === '') {
+            throw new RuntimeException('No se pudo identificar la sucursal autenticada.');
+        }
+
+        $credencial = DB::table('branch_api_credentials')
+            ->where('branch_code', $codigoSucursal)
+            ->first();
+
+        if (!$credencial || !is_string($credencial->api_key_encrypted ?? null)) {
+            throw new RuntimeException('La sucursal no tiene una API Key vinculada.');
+        }
+
+        try {
+            $apiKey = Crypt::decryptString($credencial->api_key_encrypted);
+        } catch (DecryptException $e) {
+            throw new RuntimeException(
+                'No se pudo recuperar la API Key cifrada de la sucursal.',
+                0,
+                $e
+            );
+        }
+
+        return Http::baseUrl(rtrim((string) config('services.banco_central.url'), '/'))
+            ->withToken($apiKey)
             ->acceptJson()
             ->timeout(15);
     }
 
     public function salud()
     {
-        return Http::baseUrl(
-            rtrim(config('services.banco_central.url'), '/')
-        )
+        return Http::baseUrl(rtrim((string) config('services.banco_central.url'), '/'))
             ->acceptJson()
             ->timeout(15)
             ->get('/api/salud');
+    }
+
+    public function crearCuenta(string $titular, string $numeroCuenta)
+    {
+        return $this->cliente()->post('/api/cuentas', [
+            'titular' => $titular,
+            'numero_cuenta' => $numeroCuenta,
+        ]);
     }
 
     public function buscarCuentaPorNumero(string $numeroCuenta)
@@ -36,23 +72,17 @@ class BancoCentralService
 
     public function consultarCuenta(string $id)
     {
-        return $this->cliente()->get(
-            '/api/cuentas/' . rawurlencode($id)
-        );
+        return $this->cliente()->get('/api/cuentas/' . rawurlencode($id));
     }
 
     public function consultarSaldo(string $id)
     {
-        return $this->cliente()->get(
-            '/api/cuentas/' . rawurlencode($id) . '/saldo'
-        );
+        return $this->cliente()->get('/api/cuentas/' . rawurlencode($id) . '/saldo');
     }
 
     public function consultarMovimientos(string $id)
     {
-        return $this->cliente()->get(
-            '/api/cuentas/' . rawurlencode($id) . '/movimientos'
-        );
+        return $this->cliente()->get('/api/cuentas/' . rawurlencode($id) . '/movimientos');
     }
 
     public function depositar(
@@ -82,32 +112,28 @@ class BancoCentralService
             'descripcion' => $descripcion,
         ]);
     }
-    public function validarAccesoSucursal(
-        string $codigoSucursal,
-        string $apiKey
-    ) {
-        return Http::baseUrl(
-            rtrim(config('services.banco_central.url'), '/')
-        )
+
+    public function validarAccesoSucursal(string $codigoSucursal, string $apiKey)
+    {
+        return Http::baseUrl(rtrim((string) config('services.banco_central.url'), '/'))
+            ->withToken($apiKey)
             ->acceptJson()
+            ->asJson()
             ->timeout(15)
             ->post('/api/sucursales/validar-acceso', [
                 'branch_code' => $codigoSucursal,
-                'api_key' => $apiKey,
             ]);
     }
 
     public function autenticarSucursal(string $email, string $password)
-{
-    return Http::baseUrl(
-        rtrim(config('services.banco_central.url'), '/')
-    )
-        ->acceptJson()
-        ->asJson()
-        ->timeout(15)
-        ->post('/api/sucursales/login', [
-            'email' => $email,
-            'password' => $password,
-        ]);
-}
+    {
+        return Http::baseUrl(rtrim((string) config('services.banco_central.url'), '/'))
+            ->acceptJson()
+            ->asJson()
+            ->timeout(15)
+            ->post('/api/sucursales/login', [
+                'email' => $email,
+                'password' => $password,
+            ]);
+    }
 }

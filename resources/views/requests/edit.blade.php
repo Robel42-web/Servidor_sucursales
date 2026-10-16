@@ -26,6 +26,8 @@
             <a href="{{ route('shifts.index') }}" class="block rounded-xl px-4 py-3 text-slate-300 hover:bg-slate-800">Turnos</a>
             <a href="{{ route('services.index') }}" class="block rounded-xl px-4 py-3 text-slate-300 hover:bg-slate-800">Atención al cliente</a>
             <a href="{{ route('requests.index') }}" class="block rounded-xl bg-blue-600 px-4 py-3 font-medium text-white">Solicitudes</a>
+<a href="{{ route('bank.accounts.index') }}" class="rounded-lg px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100">Cuentas</a>
+<a href="{{ route('bank.operations.index') }}" class="rounded-lg px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100">Depósitos, retiros e historial</a>
         </nav>
 
         <div class="mt-10 rounded-xl border border-slate-800 p-4">

@@ -13,9 +13,11 @@ class ShiftController extends Controller
 {
     public function index(Request $request)
     {
+        $codigo = $this->branchCode();
         $buscar = $request->query('buscar');
 
-        $turnos = EmployeeShift::with(['employee', 'shift'])
+        $turnos = EmployeeShift::where('branch_code', $codigo)
+            ->with(['employee', 'shift'])
             ->when($buscar, function ($query, $buscar) {
                 $query->whereHas('employee', function ($employeeQuery) use ($buscar) {
                     $employeeQuery->where('full_name', 'ilike', "%{$buscar}%")
@@ -31,10 +33,9 @@ class ShiftController extends Controller
 
     public function create()
     {
-        $empleados = Employee::where('status', 'active')
-            ->orderBy('full_name')
-            ->get();
-
+        $codigo = $this->branchCode();
+        $empleados = Employee::where('branch_code', $codigo)
+            ->where('status', 'active')->orderBy('full_name')->get();
         $horarios = WorkShift::orderBy('start_time')->get();
 
         return view('shifts.create', compact('empleados', 'horarios'));
@@ -42,48 +43,43 @@ class ShiftController extends Controller
 
     public function store(Request $request)
     {
+        $codigo = $this->branchCode();
         $datos = $request->validate([
             'employee_id' => [
-                'required',
-                'uuid',
-                Rule::exists('employees', 'id')->where('status', 'active'),
+                'required', 'uuid',
+                Rule::exists('employees', 'id')->where('status', 'active')->where('branch_code', $codigo),
             ],
             'shift_id' => ['required', 'uuid', 'exists:work_shifts,id'],
             'work_date' => ['required', 'date'],
-            'status' => [
-                'required',
-                Rule::in(['scheduled', 'completed', 'absent']),
-            ],
+            'status' => ['required', Rule::in(['scheduled', 'completed', 'absent'])],
         ]);
 
-        $existe = EmployeeShift::where('employee_id', $datos['employee_id'])
-            ->where('work_date', $datos['work_date'])
-            ->exists();
+        $existe = EmployeeShift::where('branch_code', $codigo)
+            ->where('employee_id', $datos['employee_id'])
+            ->where('work_date', $datos['work_date'])->exists();
 
         if ($existe) {
-            return back()
-                ->withInput()
-                ->withErrors([
-                    'employee_id' => 'Este empleado ya tiene un turno asignado para esa fecha.',
-                ]);
+            return back()->withInput()->withErrors([
+                'employee_id' => 'Este empleado ya tiene un turno asignado para esa fecha.',
+            ]);
         }
 
+        $datos['branch_code'] = $codigo;
         EmployeeShift::create($datos);
 
-        return redirect()
-            ->route('shifts.index')
-            ->with('success', 'Turno asignado correctamente.');
+        return redirect()->route('shifts.index')->with('success', 'Turno asignado correctamente.');
     }
 
     public function edit(EmployeeShift $shift)
     {
+        $shift = $this->findOwnShift($shift);
         $shift->load(['employee', 'shift']);
+        $codigo = $this->branchCode();
 
-        $empleados = Employee::where('status', 'active')
-            ->orWhere('id', $shift->employee_id)
-            ->orderBy('full_name')
-            ->get();
-
+        $empleados = Employee::where('branch_code', $codigo)
+            ->where(function ($query) use ($shift) {
+                $query->where('status', 'active')->orWhere('id', $shift->employee_id);
+            })->orderBy('full_name')->get();
         $horarios = WorkShift::orderBy('start_time')->get();
 
         return view('shifts.edit', compact('shift', 'empleados', 'horarios'));
@@ -91,37 +87,44 @@ class ShiftController extends Controller
 
     public function update(Request $request, EmployeeShift $shift)
     {
+        $shift = $this->findOwnShift($shift);
+        $codigo = $this->branchCode();
         $datos = $request->validate([
             'employee_id' => [
-                'required',
-                'uuid',
-                Rule::exists('employees', 'id')->where('status', 'active'),
+                'required', 'uuid',
+                Rule::exists('employees', 'id')->where('status', 'active')->where('branch_code', $codigo),
             ],
             'shift_id' => ['required', 'uuid', 'exists:work_shifts,id'],
             'work_date' => ['required', 'date'],
-            'status' => [
-                'required',
-                Rule::in(['scheduled', 'completed', 'absent']),
-            ],
+            'status' => ['required', Rule::in(['scheduled', 'completed', 'absent'])],
         ]);
 
-        $existe = EmployeeShift::where('employee_id', $datos['employee_id'])
+        $existe = EmployeeShift::where('branch_code', $codigo)
+            ->where('employee_id', $datos['employee_id'])
             ->where('work_date', $datos['work_date'])
-            ->where('id', '!=', $shift->id)
-            ->exists();
+            ->where('id', '!=', $shift->id)->exists();
 
         if ($existe) {
-            return back()
-                ->withInput()
-                ->withErrors([
-                    'employee_id' => 'Este empleado ya tiene un turno asignado para esa fecha.',
-                ]);
+            return back()->withInput()->withErrors([
+                'employee_id' => 'Este empleado ya tiene un turno asignado para esa fecha.',
+            ]);
         }
 
         $shift->update($datos);
 
-        return redirect()
-            ->route('shifts.index')
-            ->with('success', 'Turno actualizado correctamente.');
+        return redirect()->route('shifts.index')->with('success', 'Turno actualizado correctamente.');
+    }
+
+    private function branchCode(): string
+    {
+        $codigo = session('branch.codigo');
+        abort_unless(is_string($codigo) && trim($codigo) !== '', 403, 'La sesión no tiene una sucursal válida.');
+        return trim($codigo);
+    }
+
+    private function findOwnShift(EmployeeShift $shift): EmployeeShift
+    {
+        return EmployeeShift::where('branch_code', $this->branchCode())
+            ->whereKey($shift->getKey())->firstOrFail();
     }
 }

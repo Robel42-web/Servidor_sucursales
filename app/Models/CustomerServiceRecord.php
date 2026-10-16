@@ -20,6 +20,7 @@ class CustomerServiceRecord extends Model
     public $timestamps = false;
 
     protected $fillable = [
+        'branch_code',
         'employee_id',
         'central_account_id',
         'service_type',

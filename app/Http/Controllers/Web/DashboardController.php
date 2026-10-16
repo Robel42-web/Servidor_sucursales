@@ -12,19 +12,20 @@ class DashboardController extends Controller
 {
     public function index()
     {
+        $codigo = session('branch.codigo');
+        abort_unless(is_string($codigo) && trim($codigo) !== '', 403, 'La sesión no tiene una sucursal válida.');
+        $codigo = trim($codigo);
+
         return view('dashboard', [
-            'totalEmpleados' => Employee::count(),
-            'empleadosActivos' => Employee::where('status', 'active')->count(),
-            'totalTurnos' => EmployeeShift::count(),
-            'atencionesAbiertas' => CustomerServiceRecord::whereIn(
-                'status',
-                ['open', 'in_progress']
-            )->count(),
-            'solicitudesPendientes' => ServiceRequest::where('status', 'pending')->count(),
-            'ultimosEmpleados' => Employee::with('position')
-                ->latest('created_at')
-                ->take(5)
-                ->get(),
+            'totalEmpleados' => Employee::where('branch_code', $codigo)->count(),
+            'empleadosActivos' => Employee::where('branch_code', $codigo)->where('status', 'active')->count(),
+            'totalTurnos' => EmployeeShift::where('branch_code', $codigo)->count(),
+            'atencionesAbiertas' => CustomerServiceRecord::where('branch_code', $codigo)
+                ->whereIn('status', ['open', 'in_progress'])->count(),
+            'solicitudesPendientes' => ServiceRequest::where('branch_code', $codigo)
+                ->where('status', 'pending')->count(),
+            'ultimosEmpleados' => Employee::where('branch_code', $codigo)
+                ->with('position')->latest('created_at')->take(5)->get(),
         ]);
     }
 }

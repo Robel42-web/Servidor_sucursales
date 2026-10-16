@@ -15,16 +15,12 @@ return [
     */
     'supabase' => [
         'url' => env('SUPABASE_URL'),
-        'publishable_key' => env('SUPABASE_PUBLISHABLE_KEY'),
+        'key' => env('SUPABASE_PUBLISHABLE_KEY'),
     ],
 
 
     'branch' => [
         'api_key' => env('BRANCH_API_KEY'),
-        // Acceso exclusivo para desarrollo local
-        'local_login_enabled' => env('BRANCH_LOCAL_LOGIN_ENABLED', false),
-        'local_login_email' => env('BRANCH_LOCAL_LOGIN_EMAIL', ''),
-        'local_login_password' => env('BRANCH_LOCAL_LOGIN_PASSWORD', ''),
     ],
 
 

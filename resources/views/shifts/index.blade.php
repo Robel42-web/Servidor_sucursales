@@ -47,6 +47,8 @@
                     class="block rounded-xl px-4 py-3 text-slate-300 hover:bg-slate-800">
                     Solicitudes
                 </a>
+<a href="{{ route('bank.accounts.index') }}" class="block rounded-xl px-4 py-3 text-slate-300 hover:bg-slate-800">Cuentas bancarias</a>
+<a href="{{ route('bank.operations.index') }}" class="block rounded-xl px-4 py-3 text-slate-300 hover:bg-slate-800">Operaciones bancarias</a>
             </nav>
 
             <div class="mt-10 rounded-xl border border-slate-800 bg-slate-900 p-4">
@@ -79,6 +81,25 @@
                         </p>
                     </div>
                 @endif
+                <form method="POST" action="{{ route('logout') }}" class="mt-4">
+                    @csrf
+
+                    <button type="submit" class="flex w-full items-center justify-center gap-2 rounded-xl
+               border border-rose-500/30 bg-rose-500/10 px-4 py-3
+               font-semibold text-rose-300 transition
+               hover:bg-rose-600 hover:text-white
+               focus:outline-none focus:ring-2 focus:ring-rose-400">
+
+                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"
+                            aria-hidden="true">
+
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6A2.25 2.25 0 0 0 5.25 5.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15M18 15l3-3m0 0-3-3m3 3H9" />
+                        </svg>
+
+                        Cerrar sesión
+                    </button>
+                </form>
             </div>
         </aside>
 

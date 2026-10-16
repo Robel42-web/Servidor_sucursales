@@ -19,6 +19,7 @@ class ServiceRequest extends Model
     public $timestamps = false;
 
     protected $fillable = [
+        'branch_code',
         'employee_id',
         'customer_service_id',
         'request_type',

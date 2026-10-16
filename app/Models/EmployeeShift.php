@@ -19,6 +19,7 @@ class EmployeeShift extends Model
     public $timestamps = false;
 
     protected $fillable = [
+        'branch_code',
         'employee_id',
         'shift_id',
         'work_date',
